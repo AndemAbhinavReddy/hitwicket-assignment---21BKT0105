@@ -1,0 +1,90 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PulpitManager : MonoBehaviour
+{
+    public GameObject pulpitPrefab;
+    public Transform doofusTransform;
+    public float edgeThreshold = 0.5f;  
+    public float fallForce = 10f;      
+    private GameObject currentPulpit;
+    private GameObject nextPulpit;
+
+    void Start()
+    {
+        currentPulpit = SpawnPulpit(Vector3.zero);
+        StartCoroutine(SpawnNextPulpit());
+    }
+
+    void Update()
+    {
+        CheckForEdgeFall();
+
+        if (nextPulpit != null && Vector3.Distance(doofusTransform.position, nextPulpit.transform.position) < 1f)
+        {
+            Destroy(currentPulpit);
+            currentPulpit = nextPulpit;
+            nextPulpit = null;
+            StartCoroutine(SpawnNextPulpit());
+        }
+    }
+
+    void CheckForEdgeFall()
+    {
+        if (IsNearEdge(doofusTransform.position, currentPulpit.transform.position))
+        {
+            doofusTransform.GetComponent<Rigidbody>().AddForce(Vector3.down * fallForce, ForceMode.Impulse);
+        }
+    }
+
+    bool IsNearEdge(Vector3 doofusPosition, Vector3 pulpitPosition)
+    {
+        Vector3 distanceFromCenter = doofusPosition - pulpitPosition;
+        return Mathf.Abs(distanceFromCenter.x) > (pulpitPrefab.transform.localScale.x / 2 - edgeThreshold) ||
+               Mathf.Abs(distanceFromCenter.z) > (pulpitPrefab.transform.localScale.z / 2 - edgeThreshold);
+    }
+
+    IEnumerator SpawnNextPulpit()
+    {
+        float delay = Random.Range(GetMinTime(), GetMaxTime());
+        yield return new WaitForSeconds(delay);
+
+        Vector3 newPosition = currentPulpit.transform.position + GetRandomAdjacentPosition();
+        nextPulpit = SpawnPulpit(newPosition);
+    }
+
+    GameObject SpawnPulpit(Vector3 position)
+    {
+        return Instantiate(pulpitPrefab, position, Quaternion.identity);
+    }
+
+    Vector3 GetRandomAdjacentPosition()
+    {
+        int direction = Random.Range(0, 4);
+        Vector3 offset = Vector3.zero;
+
+        switch (direction)
+        {
+            case 0: offset = new Vector3(2, 0, 0); break;
+            case 1: offset = new Vector3(-2, 0, 0); break;
+            case 2: offset = new Vector3(0, 0, 2); break;
+            case 3: offset = new Vector3(0, 0, -2); break;
+        }
+
+        return offset;
+    }
+
+    float GetMinTime()
+    {
+        return 2.5f;
+    }
+
+    float GetMaxTime()
+    {
+        return 5f;
+    }
+}
+
+
+

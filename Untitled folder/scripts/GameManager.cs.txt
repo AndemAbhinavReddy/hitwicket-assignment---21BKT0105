@@ -1,0 +1,9 @@
+﻿using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public float minPulpitDestroyTime = 5f;
+    public float maxPulpitDestroyTime = 10f;
+    public float pulpitSpawnTime = 2f;
+    public float speed = 10f;
+}
